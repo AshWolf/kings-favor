@@ -5,11 +5,13 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+[System.Serializable]
 public struct Hex
 {
     public int q;
     public int r;
 
+    [SerializeField]
     public int s { get => -q - r; }
 
     private static Hex[] directions = {
@@ -33,7 +35,7 @@ public struct Hex
 
     public override string ToString()
     {
-        return $"({q}, {r}, {s})";
+        return $"({q}, {r})";
     }
 
     public Vector2 ToPixel(float size=0.5f)
