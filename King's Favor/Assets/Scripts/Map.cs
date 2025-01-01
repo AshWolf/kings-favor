@@ -113,6 +113,15 @@ public class MapEditor : Editor
 {
     private void GenerateMap(Map map)
     {
+        foreach(var tile in map.GetComponentsInChildren<Tile>())
+        {
+            DestroyImmediate(tile.gameObject);
+        }
+
+        foreach (var wall in map.GetComponentsInChildren<WallObject>())
+        {
+            DestroyImmediate(wall.gameObject);
+        }
 
         for (int radius = 0; radius <= map.Radius; radius++)
         {
