@@ -84,7 +84,7 @@ public class Map : MonoBehaviour
                 foreach (Hex direction in Hex.Directions)
                 {
                     Hex candidate = hex + direction;
-                    if (!IsHexValid(candidate) && !visited.Contains(candidate) && !HasWall(hex, candidate))
+                    if (IsHexValid(candidate) && !visited.Contains(candidate) && !HasWall(hex, candidate))
                     {
                         visited.Add(candidate);
                         nextQueue.Add(candidate);
