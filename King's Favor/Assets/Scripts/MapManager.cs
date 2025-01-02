@@ -17,29 +17,35 @@ public class MapManager : MonoBehaviour
 
     [Space]
 
+    public Transform Meeple;
+
+    public LineRenderer PathRenderer;
+
+    [Space]
+
     public GameObject HexPrefab;
     public GameObject WallPrefab;
     public GameObject PortalPrefab;
 
-    private Dictionary<Hex, IsTile> Tiles = new();
+    private Dictionary<Hex, IsTile> _tiles = new();
+
+    // Map state
+    private bool _meepleSelected;
+    private int _meepleRange = 2;
+    private Hex _meeplePose = Hex.Zero;
 
     // Start is called before the first frame update
     void Start()
     {
         foreach(var tile in GetComponentsInChildren<IsTile>())
         {
-            Tiles[tile.Hex] = tile;
+            _tiles[tile.Hex] = tile;
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        foreach(var tile in Tiles.Values)
-        {
-            tile.GetComponent<MeshRenderer>().material.color = Color.green;
-        }
-
         var plane = new Plane(transform.up, transform.position);
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
@@ -51,24 +57,102 @@ public class MapManager : MonoBehaviour
 
             Hex hex = Hex.PixelToHex(new(hitPoint.x, hitPoint.z), size: HexSize);
 
-            if (IsHexValid(hex))
-            {
-                // TODO: currently is just a demo to highlight hexes within a range of 1
-                foreach (Hex hexInRange in GetHexesInRange(hex, 1))
-                {
-                    var obj = Tiles[hexInRange];
-                    obj.GetComponent<MeshRenderer>().material.color = Color.red;
-                }
-            }
+            HandleHitHex(IsHexValid(hex), hex);
+        } else
+        {
+            HandleHitHex(false, Hex.Zero);
         }
     }
 
-    private HashSet<Hex> GetHexesInRange(Hex center, int range)
+    private void HandleHitHex(bool isValid, Hex hex)
     {
-        HashSet<Hex> visited = new();
+        foreach (var tile in _tiles.Values)
+        {
+            tile.SetColor(Color.green);
+        }
+
+        if(!isValid)
+        {
+            return;
+        }
+
+        var meepleRangeInfo = ComputeRangeInfo(_meeplePose, _meepleRange);
+        bool clicked = Input.GetMouseButtonDown(0);
+
+        if (_meepleSelected)
+        {
+            if (clicked)
+            {
+                if (hex == _meeplePose)
+                {
+                    _meepleSelected = false;
+                }
+                else if(meepleRangeInfo.ContainsKey(hex))
+                {
+                    // TODO: Move meeple
+                    _meepleSelected = false;
+                    _meeplePose = hex;
+                    var pixel = hex.ToPixel(size: HexSize);
+                    Vector3 newPosition = transform.TransformPoint(new(pixel.x, 0, pixel.y));
+                    Meeple.position = new(newPosition.x, Meeple.position.y, newPosition.z);
+                    Debug.Log($"Spent {meepleRangeInfo[hex].Range} movement");
+                }
+                else
+                {
+                    _meepleSelected = false;
+                }
+            }
+        }
+        else
+        {
+            if (hex == _meeplePose)
+            {
+                if (clicked)
+                {
+                    _meepleSelected = true;
+                }
+            }
+        }
+
+        if(hex == _meeplePose || _meepleSelected)
+        {
+            foreach (Hex hexInRange in meepleRangeInfo.Keys)
+            {
+                var tile = _tiles[hexInRange];
+                tile.SetColor(Color.red);
+            }
+        }
+
+        if(_meepleSelected && meepleRangeInfo.ContainsKey(hex))
+        {
+            _tiles[hex].SetColor(Color.yellow);
+
+            PathRenderer.enabled = true;
+
+            var path = GetPath(meepleRangeInfo, hex);
+            PathRenderer.positionCount = path.Count;
+            PathRenderer.SetPositions(
+                path.Select(h => transform.TransformPoint(HexToPosition(h, 0.25f))).ToArray()
+            );
+        }
+        else
+        {
+            PathRenderer.enabled = false;
+        }
+    }
+
+
+    private struct RangeHexInfo {
+        public int Range;
+        public Hex Direction;
+    }
+
+    private Dictionary<Hex, RangeHexInfo> ComputeRangeInfo(Hex center, int range)
+    {
+        Dictionary<Hex, RangeHexInfo> result = new();
         List<Hex> queue = new();
 
-        visited.Add(center);
+        result.Add(center, new () { Range = 0, Direction = Hex.Zero });
         queue.Add(center);
 
         for (int i = 0; i < range; i++)
@@ -79,9 +163,9 @@ public class MapManager : MonoBehaviour
                 foreach (Hex direction in Hex.Directions)
                 {
                     Hex candidate = hex + direction;
-                    if (IsHexValid(candidate) && !visited.Contains(candidate) && !HasWall(hex, candidate))
+                    if (IsHexValid(candidate) && !result.ContainsKey(candidate) && !HasWall(hex, candidate))
                     {
-                        visited.Add(candidate);
+                        result.Add(candidate, new() { Range = i + 1, Direction = direction });
                         nextQueue.Add(candidate);
                     }
                 }
@@ -89,7 +173,28 @@ public class MapManager : MonoBehaviour
             queue = nextQueue;
         }
 
-        return visited;
+        return result;
+    }
+
+    private List<Hex> GetPath(Dictionary<Hex, RangeHexInfo> rangeInfoMap, Hex endpoint)
+    {
+        List<Hex> path = new() { endpoint };
+
+        Hex hex = endpoint;
+        while (rangeInfoMap[hex].Range > 0)
+        {
+            hex -= rangeInfoMap[hex].Direction;
+            path.Add(hex);
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+    private Vector3 HexToPosition(Hex hex, float y=0f)
+    {
+        var pixel = hex.ToPixel(HexSize);
+        return new(pixel.x, y, pixel.y);
     }
 
     private bool HasWall(Hex a, Hex b)
