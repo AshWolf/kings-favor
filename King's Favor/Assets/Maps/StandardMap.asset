@@ -44,3 +44,16 @@ MonoBehaviour:
     Second:
       q: 1
       r: -3
+  Portals:
+  - q: 0
+    r: 5
+  - q: 5
+    r: -2
+  - q: 5
+    r: -3
+  - q: 0
+    r: -5
+  - q: -5
+    r: 3
+  - q: -5
+    r: 2

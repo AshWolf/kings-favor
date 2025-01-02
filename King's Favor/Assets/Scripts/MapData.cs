@@ -13,4 +13,5 @@ public class MapData : ScriptableObject
 {
     public int Radius;
     public List<Wall> Walls = new();
+    public List<Hex> Portals;
 }

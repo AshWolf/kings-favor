@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class Tile : MonoBehaviour
+public class IsTile : MonoBehaviour
 {
     public Hex Hex;
 

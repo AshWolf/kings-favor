@@ -19,13 +19,14 @@ public class MapManager : MonoBehaviour
 
     public GameObject HexPrefab;
     public GameObject WallPrefab;
+    public GameObject PortalPrefab;
 
-    private Dictionary<Hex, Tile> Tiles = new();
+    private Dictionary<Hex, IsTile> Tiles = new();
 
     // Start is called before the first frame update
     void Start()
     {
-        foreach(var tile in GetComponentsInChildren<Tile>())
+        foreach(var tile in GetComponentsInChildren<IsTile>())
         {
             Tiles[tile.Hex] = tile;
         }
@@ -105,17 +106,18 @@ public class MapManager : MonoBehaviour
 [CustomEditor(typeof(MapManager))]
 public class MapManagerEditor : Editor
 {
+    private static void DestoryAllChildrenImmediate<T>(MonoBehaviour parent) where T : MonoBehaviour {
+        foreach (var obj in parent.GetComponentsInChildren<T>())
+        {
+            DestroyImmediate(obj.gameObject);
+        }
+    }
+
     private void GenerateMap(MapManager map)
     {
-        foreach(var tile in map.GetComponentsInChildren<Tile>())
-        {
-            DestroyImmediate(tile.gameObject);
-        }
-
-        foreach (var wall in map.GetComponentsInChildren<WallObject>())
-        {
-            DestroyImmediate(wall.gameObject);
-        }
+        DestoryAllChildrenImmediate<IsTile>(map);
+        DestoryAllChildrenImmediate<IsWall>(map);
+        DestoryAllChildrenImmediate<IsPortal>(map);
 
         for (int radius = 0; radius <= map.MapData.Radius; radius++)
         {
@@ -125,7 +127,7 @@ public class MapManagerEditor : Editor
                 var obj = GameObject.Instantiate(map.HexPrefab, map.transform);
                 obj.name = hex.ToString();
                 obj.transform.localPosition = new(pixel.x, 0, pixel.y);
-                obj.GetComponent<Tile>().Hex = hex;
+                obj.GetComponent<IsTile>().Hex = hex;
             }
         }
 
@@ -140,6 +142,15 @@ public class MapManagerEditor : Editor
             // obj.name = wall.ToString();
             obj.transform.localPosition = new(center.x, 0, center.y);
             obj.transform.right = new(perp.x, 0, perp.y);
+        }
+
+        for(int i = 0; i < map.MapData.Portals.Count; ++i)
+        {
+            var hex = map.MapData.Portals[i];
+            var pixel = hex.ToPixel(map.HexSize);
+            var obj = GameObject.Instantiate(map.PortalPrefab, map.transform);
+            obj.name = $"Portal {i+1}";
+            obj.transform.localPosition = new(pixel.x, 0.1f, pixel.y);
         }
     }
 
