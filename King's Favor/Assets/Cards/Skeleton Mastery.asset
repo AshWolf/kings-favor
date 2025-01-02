@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49420fdfd73b87343b09673531af7c7a, type: 3}
+  m_Name: Skeleton Mastery
+  m_EditorClassIdentifier: 
+  title: Skeleton Mastery
+  description: "When you gain this card: You may discard all cards not in your draw
+    pile. If you do so\u201A trash any Dark Magic card. Choose any Skeleton. It can
+    make any combination of moves and attacks\u201A up to three times in total. It
+    does not need to end closer to the Kingdom."
+  tier: 3
+  cost: 8
+  copies: 1

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49420fdfd73b87343b09673531af7c7a, type: 3}
+  m_Name: Flexible Curse
+  m_EditorClassIdentifier: 
+  title: Flexible Curse
+  description: "When you gain this card: You may discard all cards not in your draw
+    pile. If you do so\u201A trash any Dark Magic card. Choose any monster that can
+    move: that monster moves either 1 or 2 spaces. The monster must end at least
+    one space closer to the kingdom."
+  tier: 1
+  cost: 3
+  copies: 2
