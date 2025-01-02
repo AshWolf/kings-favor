@@ -8,23 +8,17 @@ using UnityEngine;
 using UnityEngine.Timeline;
 
 
-[System.Serializable]
-public struct Wall {
-    public Hex First;
-    public Hex Second;
-}
-
-public class Map : MonoBehaviour
+public class MapManager : MonoBehaviour
 {
-    public GameObject HexPrefab;
-    public GameObject WallPrefab;
 
-    public Transform Marker;
-
-    public List<Wall> Walls = new();
+    public MapData MapData;
 
     public float HexSize = 0.51f;
-    public int Radius = 5;
+
+    [Space]
+
+    public GameObject HexPrefab;
+    public GameObject WallPrefab;
 
     private Dictionary<Hex, Tile> Tiles = new();
 
@@ -99,19 +93,19 @@ public class Map : MonoBehaviour
 
     private bool HasWall(Hex a, Hex b)
     {
-        return Walls.Any(wall => (wall.First == a && wall.Second == b) || (wall.First == b && wall.Second == a));
+        return MapData.Walls.Any(wall => (wall.First == a && wall.Second == b) || (wall.First == b && wall.Second == a));
     }
 
     private bool IsHexValid(Hex hex)
     {
-        return hex.Magnitude() <= Radius;
+        return hex.Magnitude() <= MapData.Radius;
     }
 }
 
-[CustomEditor(typeof(Map))]
-public class MapEditor : Editor
+[CustomEditor(typeof(MapManager))]
+public class MapManagerEditor : Editor
 {
-    private void GenerateMap(Map map)
+    private void GenerateMap(MapManager map)
     {
         foreach(var tile in map.GetComponentsInChildren<Tile>())
         {
@@ -123,7 +117,7 @@ public class MapEditor : Editor
             DestroyImmediate(wall.gameObject);
         }
 
-        for (int radius = 0; radius <= map.Radius; radius++)
+        for (int radius = 0; radius <= map.MapData.Radius; radius++)
         {
             foreach (Hex hex in Hex.Ring(radius))
             {
@@ -135,7 +129,7 @@ public class MapEditor : Editor
             }
         }
 
-        foreach (Wall wall in map.Walls)
+        foreach (Wall wall in map.MapData.Walls)
         {
             var p1 = wall.First.ToPixel(map.HexSize);
             var p2 = wall.Second.ToPixel(map.HexSize);
@@ -153,7 +147,7 @@ public class MapEditor : Editor
     {
         DrawDefaultInspector();
 
-        Map map = (Map)target;
+        MapManager map = (MapManager)target;
 
         if (GUILayout.Button("Generate Map"))
         {
