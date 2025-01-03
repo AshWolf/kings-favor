@@ -110,6 +110,10 @@ public struct Hex : IEquatable<Hex>
         }
     }
 
+    public Hex ReflectQ() => new(q, s, r);
+    public Hex ReflectR() => new(s, r, q);
+    public Hex ReflectS() => new(r, q, s);
+
     public override bool Equals(object other) {
         if (other is not Hex)
         {
